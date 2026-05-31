@@ -4,6 +4,7 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
+import "translations.js" as Tr
 
 PluginComponent {
     id: root
@@ -13,6 +14,7 @@ PluginComponent {
     property bool popoutVisible: false
     property string ctlError: ""
 
+    readonly property string lang: pluginData.language || "en"
     readonly property string pillContent: pluginData.pillContent || "cpuTemp"
     readonly property int pollInterval: (pluginData.pollInterval || 4) * 1000
     readonly property int fanQuiet: pluginData.fanQuiet || 40
@@ -20,9 +22,13 @@ PluginComponent {
     readonly property string readerPath: PluginService.pluginDirectory + "/acerSense/acer-read"
 
     readonly property var profileValues: ["low-power", "quiet", "balanced", "balanced-performance"]
-    readonly property var profileLabels: ["Economia", "Quiet", "Balanced", "Turbo"]
+    readonly property var profileLabels: [tr("Power Saver"), tr("Quiet"), tr("Balanced"), tr("Performance")]
 
     popoutWidth: 380
+
+    function tr(k) {
+        return Tr.tr(k, root.lang);
+    }
 
     function profileIcon(p) {
         switch (p) {
@@ -65,7 +71,7 @@ PluginComponent {
         ctlProcess.running = true;
     }
     function setProfile(p) {
-        runCtl(["profile", p], "Perfil: " + p);
+        runCtl(["profile", p], "Profile: " + p);
     }
     function setFan(preset) {
         if (preset === "quiet") {
@@ -75,13 +81,13 @@ PluginComponent {
         runCtl(["fan", preset], "Fan: " + preset);
     }
     function setBatteryLimit(on) {
-        runCtl(["battery-limit", on ? "on" : "off"], "Limite de carga: " + (on ? "80%" : "off"));
+        runCtl(["battery-limit", on ? "on" : "off"], "Battery limit: " + (on ? "80%" : "off"));
     }
     function setUsbCharging(v) {
         runCtl(["usb-charging", v], "USB charging: " + v);
     }
     function setGpu(mode) {
-        runCtl(["gpu", mode], "GPU: " + mode + " — reinicie pra aplicar");
+        runCtl(["gpu", mode], "GPU: " + mode + " — reboot to apply");
     }
 
     function refreshSysfs() {
@@ -162,7 +168,7 @@ PluginComponent {
                 if (root.popoutVisible)
                     root.refreshGpu();
             } else {
-                ToastService.showError("Falhou: " + ctlProcess.actionDesc, root.ctlError || ("exit " + code));
+                ToastService.showError("Failed: " + ctlProcess.actionDesc, root.ctlError || ("exit " + code));
             }
         }
     }
@@ -310,7 +316,7 @@ PluginComponent {
                     spacing: Theme.spacingXS
 
                     StyledText {
-                        text: "Perfil de energia"
+                        text: root.tr("Power profile")
                         font.pixelSize: Theme.fontSizeMedium
                         font.weight: Font.Medium
                         color: Theme.surfaceText
@@ -331,14 +337,14 @@ PluginComponent {
                     spacing: Theme.spacingXS
 
                     StyledText {
-                        text: "Ventoinhas"
+                        text: root.tr("Fans")
                         font.pixelSize: Theme.fontSizeMedium
                         font.weight: Font.Medium
                         color: Theme.surfaceText
                     }
                     DankButtonGroup {
                         width: parent.width
-                        model: ["Auto", "Quiet " + root.fanQuiet + "%", "Max"]
+                        model: ["Auto", root.tr("Quiet") + " " + root.fanQuiet + "%", "Max"]
                         currentIndex: root.fanPresetIndex(root.telemetry.fanSpeed)
                         onSelectionChanged: (index, selected) => {
                             if (!selected)
@@ -360,20 +366,20 @@ PluginComponent {
                     StyledText {
                         width: parent.width
                         elide: Text.ElideRight
-                        text: "Bateria — " + (root.telemetry.battPct != null ? root.telemetry.battPct + "%" : "—") + (root.telemetry.battStatus ? " · " + root.telemetry.battStatus : "") + (root.telemetry.battCycles != null ? " · " + root.telemetry.battCycles + " ciclos" : "")
+                        text: root.tr("Battery") + " — " + (root.telemetry.battPct != null ? root.telemetry.battPct + "%" : "—") + (root.telemetry.battStatus ? " · " + root.tr(root.telemetry.battStatus) : "") + (root.telemetry.battCycles != null ? " · " + root.telemetry.battCycles + " " + root.tr("cycles") : "")
                         font.pixelSize: Theme.fontSizeMedium
                         font.weight: Font.Medium
                         color: Theme.surfaceText
                     }
                     DankToggle {
                         width: parent.width
-                        text: "Limitar carga a 80%"
+                        text: root.tr("Limit charge to 80%")
                         checked: root.telemetry.battLimiter === 1
                         onToggled: on => root.setBatteryLimit(on)
                     }
                     DankDropdown {
                         width: parent.width
-                        text: "Carregar USB"
+                        text: root.tr("USB charging")
                         currentValue: (root.telemetry.usbCharging == null || root.telemetry.usbCharging === 0) ? "off" : String(root.telemetry.usbCharging)
                         options: ["off", "10", "20", "30"]
                         onValueChanged: v => root.setUsbCharging(v)
@@ -388,7 +394,7 @@ PluginComponent {
                     StyledText {
                         width: parent.width
                         elide: Text.ElideRight
-                        text: "GPU — modo " + (root.gpuData.gpuMode || "—") + (root.gpuData.gpuUtil != null ? " · " + root.gpuData.gpuUtil + "% uso" : "")
+                        text: "GPU — " + root.tr("mode") + " " + (root.gpuData.gpuMode || "—") + (root.gpuData.gpuUtil != null ? " · " + root.gpuData.gpuUtil + "% " + root.tr("usage") : "")
                         font.pixelSize: Theme.fontSizeMedium
                         font.weight: Font.Medium
                         color: Theme.surfaceText
@@ -419,14 +425,14 @@ PluginComponent {
                         StyledText {
                             width: parent.width
                             wrapMode: Text.WordWrap
-                            text: "Trocar GPU pra '" + panel.pendingGpu + "'? Salva teu trabalho — encerra a sessão gráfica e exige reboot."
+                            text: root.tr("Switch GPU to") + " '" + panel.pendingGpu + "' — " + root.tr("Save your work — this ends the graphics session and requires a reboot.")
                             color: Theme.warning
                             font.pixelSize: Theme.fontSizeSmall
                         }
                         Row {
                             spacing: Theme.spacingS
                             DankButton {
-                                text: "Confirmar"
+                                text: root.tr("Confirm")
                                 backgroundColor: Theme.error
                                 textColor: "#FFFFFF"
                                 onClicked: {
@@ -435,7 +441,7 @@ PluginComponent {
                                 }
                             }
                             DankButton {
-                                text: "Cancelar"
+                                text: root.tr("Cancel")
                                 backgroundColor: Theme.surfaceContainerHigh
                                 textColor: Theme.surfaceText
                                 onClicked: panel.pendingGpu = ""

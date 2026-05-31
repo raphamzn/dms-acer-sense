@@ -55,9 +55,14 @@ This installs `/usr/local/bin/acer-ctl` and `/etc/sudoers.d/acer-ctl` (NOPASSWD 
 
 ## Settings
 
+- **Language** — UI language: English (default) / Português / Español
 - **Pill content** — what shows next to the icon: CPU temp / fan RPM / nothing
 - **Fan Quiet (%)** — the speed used by the "Quiet" preset
 - **Refresh interval** — sysfs poll cadence
+
+### Translations
+
+UI strings live in [`translations.js`](translations.js) — English keys with `pt`/`es` overrides and a `tr(key, lang)` fallback. To add a language, add its code to each entry (and to the selector in `AcerSenseSettings.qml`); PRs welcome.
 
 ## Security
 

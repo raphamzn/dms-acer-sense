@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Widgets
+import "translations.js" as Tr
 
 FocusScope {
     id: root
@@ -8,6 +9,8 @@ FocusScope {
     property var pluginService: null
 
     readonly property var pillKeys: ["none", "cpuTemp", "fanRpm"]
+    readonly property var langKeys: ["en", "pt", "es"]
+    property string language: "en"
     property string pillContent: "cpuTemp"
     property int fanQuiet: 40
     property int pollInterval: 4
@@ -15,6 +18,9 @@ FocusScope {
     implicitHeight: col.implicitHeight + Theme.spacingM * 2
     height: implicitHeight
 
+    function tr(k) {
+        return Tr.tr(k, root.language);
+    }
     function load(key, def) {
         return pluginService ? pluginService.loadPluginData("acerSense", key, def) : def;
     }
@@ -24,6 +30,7 @@ FocusScope {
     }
 
     Component.onCompleted: {
+        language = load("language", "en");
         pillContent = load("pillContent", "cpuTemp");
         fanQuiet = load("fanQuiet", 40);
         pollInterval = load("pollInterval", 4);
@@ -47,13 +54,35 @@ FocusScope {
             spacing: Theme.spacingXS
 
             StyledText {
-                text: "Conteúdo da pill (ao lado do ícone)"
+                text: root.tr("Language")
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceText
             }
             DankButtonGroup {
                 width: parent.width
-                model: ["Nada", "Temp CPU", "Fan RPM"]
+                model: ["English", "Português", "Español"]
+                currentIndex: root.langKeys.indexOf(root.language)
+                onSelectionChanged: (index, selected) => {
+                    if (!selected)
+                        return;
+                    root.language = root.langKeys[index];
+                    root.save("language", root.language);
+                }
+            }
+        }
+
+        Column {
+            width: parent.width
+            spacing: Theme.spacingXS
+
+            StyledText {
+                text: root.tr("Pill content (next to the icon)")
+                font.pixelSize: Theme.fontSizeMedium
+                color: Theme.surfaceText
+            }
+            DankButtonGroup {
+                width: parent.width
+                model: [root.tr("Nothing"), root.tr("CPU temp"), "Fan RPM"]
                 currentIndex: root.pillKeys.indexOf(root.pillContent)
                 onSelectionChanged: (index, selected) => {
                     if (!selected)
@@ -65,7 +94,7 @@ FocusScope {
             StyledText {
                 width: parent.width
                 wrapMode: Text.WordWrap
-                text: "Temp da GPU fica fora da pill de propósito: leria a dGPU continuamente e a acordaria do sono."
+                text: root.tr("GPU temp is intentionally left off the pill: it would query the dGPU continuously and wake it from sleep.")
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceVariantText
             }
@@ -96,7 +125,7 @@ FocusScope {
             spacing: Theme.spacingXS
 
             StyledText {
-                text: "Intervalo de atualização (s)"
+                text: root.tr("Refresh interval (s)")
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceText
             }
