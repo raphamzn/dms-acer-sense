@@ -24,7 +24,45 @@ PluginComponent {
     readonly property var profileValues: ["low-power", "quiet", "balanced", "balanced-performance"]
     readonly property var profileLabels: [tr("Power Saver"), tr("Quiet"), tr("Balanced"), tr("Performance")]
 
-    popoutWidth: 380
+    popoutWidth: 400
+
+    component SegSelector: Row {
+        id: seg
+
+        property var labels: []
+        property int current: -1
+        signal picked(int index)
+
+        spacing: Theme.spacingXS
+
+        Repeater {
+            model: seg.labels
+            Rectangle {
+                width: (seg.width - seg.spacing * (seg.labels.length - 1)) / Math.max(1, seg.labels.length)
+                height: 36
+                radius: Theme.cornerRadius
+                color: index === seg.current ? Theme.primary : (cellArea.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh)
+
+                StyledText {
+                    anchors.centerIn: parent
+                    width: parent.width - Theme.spacingS * 2
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                    text: modelData
+                    color: index === seg.current ? Theme.onPrimary : Theme.surfaceText
+                    font.pixelSize: Theme.fontSizeMedium
+                }
+
+                MouseArea {
+                    id: cellArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: seg.picked(index)
+                }
+            }
+        }
+    }
 
     function tr(k) {
         return Tr.tr(k, root.lang);
@@ -321,14 +359,11 @@ PluginComponent {
                         font.weight: Font.Medium
                         color: Theme.surfaceText
                     }
-                    DankButtonGroup {
+                    SegSelector {
                         width: parent.width
-                        model: root.profileLabels
-                        currentIndex: root.profileValues.indexOf(root.telemetry.profile)
-                        onSelectionChanged: (index, selected) => {
-                            if (selected)
-                                root.setProfile(root.profileValues[index]);
-                        }
+                        labels: root.profileLabels
+                        current: root.profileValues.indexOf(root.telemetry.profile)
+                        onPicked: i => root.setProfile(root.profileValues[i])
                     }
                 }
 
@@ -342,16 +377,14 @@ PluginComponent {
                         font.weight: Font.Medium
                         color: Theme.surfaceText
                     }
-                    DankButtonGroup {
+                    SegSelector {
                         width: parent.width
-                        model: ["Auto", root.tr("Quiet") + " " + root.fanQuiet + "%", "Max"]
-                        currentIndex: root.fanPresetIndex(root.telemetry.fanSpeed)
-                        onSelectionChanged: (index, selected) => {
-                            if (!selected)
-                                return;
-                            if (index === 0)
+                        labels: ["Auto", root.tr("Quiet") + " " + root.fanQuiet + "%", "Max"]
+                        current: root.fanPresetIndex(root.telemetry.fanSpeed)
+                        onPicked: i => {
+                            if (i === 0)
                                 root.setFan("auto");
-                            else if (index === 1)
+                            else if (i === 1)
                                 root.setFan("quiet");
                             else
                                 root.setFan("max");
@@ -400,20 +433,15 @@ PluginComponent {
                         color: Theme.surfaceText
                     }
 
-                    Row {
+                    SegSelector {
                         width: parent.width
-                        spacing: Theme.spacingS
                         visible: panel.pendingGpu === ""
-
-                        Repeater {
-                            model: ["hybrid", "integrated", "nvidia"]
-                            DankButton {
-                                text: modelData
-                                backgroundColor: root.gpuData.gpuMode === modelData ? Theme.primary : Theme.surfaceContainerHigh
-                                textColor: root.gpuData.gpuMode === modelData ? Theme.onPrimary : Theme.surfaceText
-                                enabled: root.gpuData.gpuMode !== modelData
-                                onClicked: panel.pendingGpu = modelData
-                            }
+                        labels: ["hybrid", "integrated", "nvidia"]
+                        current: ["hybrid", "integrated", "nvidia"].indexOf(root.gpuData.gpuMode)
+                        onPicked: i => {
+                            const m = ["hybrid", "integrated", "nvidia"][i];
+                            if (m !== root.gpuData.gpuMode)
+                                panel.pendingGpu = m;
                         }
                     }
 
