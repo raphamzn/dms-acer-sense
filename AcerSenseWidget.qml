@@ -45,12 +45,13 @@ PluginComponent {
 
                 StyledText {
                     anchors.centerIn: parent
-                    width: parent.width - Theme.spacingS * 2
+                    width: parent.width - Theme.spacingXS * 2
                     horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.NoWrap
                     elide: Text.ElideRight
                     text: modelData
                     color: index === seg.current ? Theme.onPrimary : Theme.surfaceText
-                    font.pixelSize: Theme.fontSizeMedium
+                    font.pixelSize: Theme.fontSizeSmall
                 }
 
                 MouseArea {
