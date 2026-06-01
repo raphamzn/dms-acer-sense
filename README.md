@@ -44,7 +44,9 @@ ls /sys/devices/platform/acer-wmi/nitro_sense   # or predator_sense on a Predato
 
 Then **restart DMS** (`dms restart`).
 
-Without the module the panel still shows the **power profile**, **battery readout** and **CPU temp**; the fan/battery/USB controls are hidden and the popout shows a notice with these install steps.
+Without the module the panel still shows the **power profile**, **battery readout** and **CPU temp**; the fan/battery/USB controls are hidden and the popout shows a notice with these install steps:
+
+![Popout without linuwu-sense — warning notice and install instructions](screenshot-no-linuwu-sense.png)
 
 ## Install
 
