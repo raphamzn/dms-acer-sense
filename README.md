@@ -21,6 +21,31 @@ A laptop control panel for **Acer Nitro / Predator** laptops, in your [DankMater
 
 > Tested on an Acer Nitro (ANV15-51). Predator support uses the same `linuwu-sense` interface (`predator_sense`) and is best-effort — reports welcome.
 
+## Installing linuwu-sense
+
+The fan, charge-limit and USB-charging controls write to the `acer-wmi` `nitro_sense` / `predator_sense` sysfs nodes, which are provided by the [**linuwu-sense**](https://github.com/0x7375646F/Linuwu-Sense) **DKMS kernel module**.
+
+**This plugin does _not_ install it for you** — a bar widget has no business compiling and loading kernel modules. Install it once yourself:
+
+**Arch / CachyOS** (AUR):
+
+```bash
+yay -S linuwu-sense-dkms-git      # or: paru -S linuwu-sense-dkms-git
+sudo modprobe linuwu_sense        # load now (auto-loads on boot afterwards)
+```
+
+**Other distros** — build from source following the [upstream README](https://github.com/0x7375646F/Linuwu-Sense) (clone → `make` → install via DKMS so it survives kernel updates → `sudo modprobe linuwu_sense`).
+
+Verify it loaded — this directory should now exist:
+
+```bash
+ls /sys/devices/platform/acer-wmi/nitro_sense   # or predator_sense on a Predator
+```
+
+Then **restart DMS** (`dms restart`).
+
+Without the module the panel still shows the **power profile**, **battery readout** and **CPU temp**; the fan/battery/USB controls are hidden and the popout shows a notice with these install steps.
+
 ## Install
 
 ### Via DMS (after it's in the registry)

@@ -81,6 +81,7 @@ if [ -n "$NS" ]; then
 fi
 
 printf '{'
+[ -n "$NS" ] && printf '"hasNs":true,' || printf '"hasNs":false,'
 jstr profile "$profile"; printf ','
 jnum cpuTemp "$cpuTemp"; printf ','
 jnum fanCpu "$fanCpu"; printf ','

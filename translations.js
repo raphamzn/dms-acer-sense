@@ -37,6 +37,15 @@ var strings = {
     "Save your work — this ends the graphics session and requires a reboot.":
         { pt: "Salve seu trabalho — isso encerra a sessão gráfica e exige reiniciar.",
           es: "Guarde su trabajo — esto cierra la sesión gráfica y requiere reiniciar." },
+    // linuwu-sense missing notice
+    "linuwu-sense not detected — fan and battery controls are disabled.":
+        { pt: "linuwu-sense não detectado — controles de ventoinha e bateria desativados.",
+          es: "linuwu-sense no detectado — controles de ventilador y batería desactivados." },
+    "Install the kernel module and restart DMS. On Arch / CachyOS:":
+        { pt: "Instale o módulo de kernel e reinicie o DMS. No Arch / CachyOS:",
+          es: "Instala el módulo de kernel y reinicia DMS. En Arch / CachyOS:" },
+    "Other distros:":
+        { pt: "Outras distros:", es: "Otras distros:" },
     // Battery status (from sysfs, in English)
     "Charging":
         { pt: "Carregando", es: "Cargando" },

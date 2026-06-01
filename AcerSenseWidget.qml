@@ -18,6 +18,8 @@ PluginComponent {
     readonly property string pillContent: pluginData.pillContent || "cpuTemp"
     readonly property int pollInterval: (pluginData.pollInterval || 4) * 1000
     readonly property int fanQuiet: pluginData.fanQuiet || 40
+    // false only once a read confirms the sysfs node is absent (stays optimistic before first read)
+    readonly property bool hasNs: root.telemetry.hasNs !== false
 
     readonly property string readerPath: PluginService.pluginDirectory + "/acerSense/acer-read"
 
@@ -350,6 +352,78 @@ PluginComponent {
                     }
                 }
 
+                Rectangle {
+                    width: parent.width
+                    visible: !root.hasNs
+                    radius: Theme.cornerRadius
+                    color: Theme.surfaceContainerHigh
+                    border.color: Theme.warning
+                    border.width: 1
+                    implicitHeight: noticeCol.implicitHeight + Theme.spacingM * 2
+
+                    Column {
+                        id: noticeCol
+                        anchors.fill: parent
+                        anchors.margins: Theme.spacingM
+                        spacing: Theme.spacingS
+
+                        Row {
+                            width: parent.width
+                            spacing: Theme.spacingXS
+
+                            DankIcon {
+                                name: "warning"
+                                size: Theme.iconSizeSmall
+                                color: Theme.warning
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            StyledText {
+                                width: parent.width - Theme.iconSizeSmall - Theme.spacingXS
+                                wrapMode: Text.WordWrap
+                                text: root.tr("linuwu-sense not detected — fan and battery controls are disabled.")
+                                color: Theme.warning
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.weight: Font.Medium
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        StyledText {
+                            width: parent.width
+                            wrapMode: Text.WordWrap
+                            text: root.tr("Install the kernel module and restart DMS. On Arch / CachyOS:")
+                            color: Theme.surfaceVariantText
+                            font.pixelSize: Theme.fontSizeSmall
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            radius: Theme.cornerRadius
+                            color: Theme.surfaceContainerHighest
+                            implicitHeight: cmdText.implicitHeight + Theme.spacingS * 2
+
+                            StyledText {
+                                id: cmdText
+                                anchors.fill: parent
+                                anchors.margins: Theme.spacingS
+                                wrapMode: Text.WrapAnywhere
+                                text: "yay -S linuwu-sense-dkms-git"
+                                font.family: "monospace"
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.surfaceText
+                            }
+                        }
+
+                        StyledText {
+                            width: parent.width
+                            wrapMode: Text.WrapAnywhere
+                            text: root.tr("Other distros:") + " github.com/0x7375646F/Linuwu-Sense"
+                            color: Theme.surfaceVariantText
+                            font.pixelSize: Theme.fontSizeSmall
+                        }
+                    }
+                }
+
                 Column {
                     width: parent.width
                     spacing: Theme.spacingXS
@@ -371,6 +445,7 @@ PluginComponent {
                 Column {
                     width: parent.width
                     spacing: Theme.spacingXS
+                    visible: root.hasNs
 
                     StyledText {
                         text: root.tr("Fans")
@@ -407,12 +482,14 @@ PluginComponent {
                     }
                     DankToggle {
                         width: parent.width
+                        visible: root.hasNs
                         text: root.tr("Limit charge to 80%")
                         checked: root.telemetry.battLimiter === 1
                         onToggled: on => root.setBatteryLimit(on)
                     }
                     DankDropdown {
                         width: parent.width
+                        visible: root.hasNs
                         text: root.tr("USB charging")
                         currentValue: (root.telemetry.usbCharging == null || root.telemetry.usbCharging === 0) ? "off" : String(root.telemetry.usbCharging)
                         options: ["off", "10", "20", "30"]
